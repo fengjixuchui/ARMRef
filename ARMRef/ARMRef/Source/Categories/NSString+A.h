@@ -1,5 +1,6 @@
 //
-//  ACollectionViewCell.h
+//  NSString+A.h
+//  ARMRef
 //
 //  Copyright (c) 2020 ARMRef (https://github.com/evilpenguin/ARMRef)
 //
@@ -21,17 +22,13 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class AInstruction;
-@interface ACollectionViewCell : UICollectionViewCell
-@property (nonatomic, readonly, class) NSString *identifier;
-@property (nonatomic, weak) AInstruction *instruction;
+@interface NSString (A)
 
-+ (CGFloat) heightForInstruction:(AInstruction *)instruction withWidth:(CGFloat)width;
+- (NSString *__nullable) firstCharacter;
 
 @end
 

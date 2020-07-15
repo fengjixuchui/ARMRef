@@ -25,6 +25,7 @@
 #import "ACollectionViewDataHandle.h"
 #import "AInstructionLoader.h"
 #import "ACollectionViewCell.h"
+#import "ACollectionReusableHeaderView.h"
 
 @interface ACollectionViewDataHandle ()
 
@@ -36,19 +37,29 @@
 
 - (nonnull __kindof UICollectionViewCell *) collectionView:(nonnull UICollectionView *)collectionView cellForItemAtIndexPath:(nonnull NSIndexPath *)indexPath {
     ACollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:ACollectionViewCell.identifier forIndexPath:indexPath];
-    cell.instruction = self.instructions[indexPath.row];
 
     return cell;
 }
 
-- (NSInteger) collectionView:(nonnull UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
+- (NSInteger) numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
     return self.instructions.count;
+}
+
+- (NSInteger) collectionView:(nonnull UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
+    NSString *key = safetyObjectAtIndex(self.instructions.allKeys, section);
+    
+    return [self.instructions[key] count];
 }
 
 #pragma mark - UICollectionViewDelegate
 
+- (void) collectionView:(UICollectionView *)collectionView willDisplayCell:(ACollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath {
+    cell.instruction = [self.instructions instructionAtIndexPath:indexPath];
+}
+
 - (void) collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    [self.handleTouch collectioinViewHandle:self didTouchInstruction:self.instructions[indexPath.row]];
+    AInstruction *instruction = [self.instructions instructionAtIndexPath:indexPath];
+    [self.handleTouch collectioinViewHandle:self didTouchInstruction:instruction];
 }
 
 - (void) collectionView:(UICollectionView *)collectionView didHighlightItemAtIndexPath:(NSIndexPath *)indexPath {
@@ -56,28 +67,44 @@
     cell.contentView.backgroundColor = [UIColor colorFromHex:0xadb1b5];
 }
 
-- (void)collectionView:(UICollectionView *)collectionView didUnhighlightItemAtIndexPath:(NSIndexPath *)indexPath {
+- (void) collectionView:(UICollectionView *)collectionView didUnhighlightItemAtIndexPath:(NSIndexPath *)indexPath {
     UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
     cell.contentView.backgroundColor = UIColor.whiteColor;
+}
+
+- (UICollectionReusableView *) collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath {
+    if (kind == UICollectionElementKindSectionHeader) {
+        ACollectionReusableHeaderView *headerView = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader
+                                                                                       withReuseIdentifier:ACollectionReusableHeaderView.identifier
+                                                                                              forIndexPath:indexPath];
+        headerView.label.text = [safetyObjectAtIndex(self.instructions.allKeys, indexPath.section) uppercaseString];
+
+        return headerView;
+    }
+    
+    return nil;
 }
 
 #pragma mark - UICollectionViewDelegateFlowLayout
 
 - (CGSize) collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    ACollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:ACollectionViewCell.identifier forIndexPath:indexPath];
-    cell.instruction = self.instructions[indexPath.row];
-    
-    CGFloat maxSize = [cell maxSizeForInstruction:self.instructions[indexPath.row] withWidth:collectionView.bounds.size.width];
-    
-    return CGSizeMake(collectionView.bounds.size.width, maxSize);
+    AInstruction *instruction = [self.instructions instructionAtIndexPath:indexPath];
+    CGFloat maxSize = [ACollectionViewCell heightForInstruction:instruction
+                                                      withWidth:collectionView.bounds.size.width - 40.0f];
+
+    return CGSizeMake(collectionView.bounds.size.width - 20.0f, maxSize);
+}
+
+- (CGSize) collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
+    return CGSizeMake(collectionView.bounds.size.width, 40.0f);
 }
 
 - (UIEdgeInsets) collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
-    return UIEdgeInsetsZero;
+    return UIEdgeInsetsMake(10.0f, 10.0f, 10.0f, 10.0f);
 }
 
 - (CGFloat) collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout minimumLineSpacingForSectionAtIndex:(NSInteger)section {
-    return 4.0f;
+    return 10.0f;
 }
 
 - (CGFloat) collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section {

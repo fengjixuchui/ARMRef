@@ -35,7 +35,6 @@
 @property (nonatomic, strong) UILabel *noDataLabel;
 @property (nonatomic, strong) ACollectionView *collectionView;
 @property (nonatomic, strong) ACollectionViewDataHandle *collectionViewDataHandle;
-@property (nonatomic, assign) CGRect keyboardFrame;
 
 @end
 
@@ -52,12 +51,6 @@
                                                selector:@selector(_loaderNotification:)
                                                    name:AInstructionLoaderFinishedNotificaton
                                                  object:nil];
-        
-        [NSNotificationCenter.defaultCenter addObserver:self
-                                               selector:@selector(_keyboardWillChangeFrameNotification:)
-                                                   name:UIKeyboardWillChangeFrameNotification
-                                                 object:nil];
-        
     }
     
     return self;
@@ -92,12 +85,10 @@
     self.noDataLabel.frame = self.view.bounds;
     
     // Collection view
-    CGFloat padding = (!leftRightInset ? 8.0f : 0.0f);
-    CGRect collectionViewFrame = CGRectMake(self.view.safeAreaInsets.left + padding,
-                                            CGRectGetMaxY(self.searchBar.frame) + 5.0f,
-                                            self.view.bounds.size.width - (leftRightInset + (padding * 2.0f)),
+    CGRect collectionViewFrame = CGRectMake(self.view.safeAreaInsets.left,
+                                            CGRectGetMaxY(self.searchBar.frame),
+                                            self.view.bounds.size.width - leftRightInset,
                                             self.view.bounds.size.height - (CGRectGetMaxY(self.searchBar.frame) + 5.0f));
-    if (self.searchBar.isFirstResponder) collectionViewFrame.size.height -= self.keyboardFrame.size.height;
 
     self.collectionView.frame = collectionViewFrame;
     [self.collectionView.collectionViewLayout invalidateLayout];
@@ -125,8 +116,10 @@
 
 - (void) _updateDataAndLoaderWithString:(NSString *)string {
     self.loader.filerString = string;
+    
     self.collectionViewDataHandle.instructions = self.loader.instructions;
     [self.collectionView reloadData];
+    [self.collectionView setContentOffset:CGPointZero animated:NO];
     
     [self _showNoDataStyle:!self.collectionViewDataHandle.instructions.count];
 }
@@ -135,12 +128,6 @@
     self.title = (show ? nil : self.loader.architecture);
     self.noDataLabel.alpha = (show ? 1.0f : 0.0f);
     self.collectionView.alpha = (show ? 0.0f : 1.0f);
-}
-
-- (void) _keyboardWillChangeFrameNotification:(NSNotification *)notification {
-    self.keyboardFrame = [notification.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
-    
-    [self.view setNeedsLayout];
 }
 
 #pragma mark - Lazy
@@ -152,6 +139,7 @@
         _searchBar.backgroundImage = UIImage.new;
         _searchBar.backgroundImage = UIImage.new;
         _searchBar.tintColor = UIColor.whiteColor;
+        _searchBar.barTintColor = UIColor.whiteColor;
         _searchBar.delegate = self;
         _searchBar.showsCancelButton = YES;
         _searchBar.searchTextField.backgroundColor = UIColor.whiteColor;
@@ -204,10 +192,10 @@
 }
 
 - (void) searchBarCancelButtonClicked:(UISearchBar *)searchBar {
-    [self _updateDataAndLoaderWithString:nil];
-    
     searchBar.text = nil;
     [searchBar resignFirstResponder];
+    
+    [self _updateDataAndLoaderWithString:nil];
 }
 
 - (void) searchBarSearchButtonClicked:(UISearchBar *)searchBar {

@@ -1,5 +1,6 @@
 //
-//  ACollectionViewCell.h
+//  ACollectionReusableHeaderView.m
+//  ARMRef
 //
 //  Copyright (c) 2020 ARMRef (https://github.com/evilpenguin/ARMRef)
 //
@@ -21,18 +22,52 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+#import "ACollectionReusableHeaderView.h"
 
-#import <UIKit/UIKit.h>
-
-NS_ASSUME_NONNULL_BEGIN
-
-@class AInstruction;
-@interface ACollectionViewCell : UICollectionViewCell
-@property (nonatomic, readonly, class) NSString *identifier;
-@property (nonatomic, weak) AInstruction *instruction;
-
-+ (CGFloat) heightForInstruction:(AInstruction *)instruction withWidth:(CGFloat)width;
+@interface ACollectionReusableHeaderView ()
+@property (nonatomic, strong) UILabel *label;
 
 @end
 
-NS_ASSUME_NONNULL_END
+@implementation ACollectionReusableHeaderView
+
+#pragma mark - ACollectionReusableHeaderView
+
+- (instancetype) initWithFrame:(CGRect)frame {
+    if (self = [super initWithFrame:frame]) {
+        self.backgroundColor = [UIColor colorFromHex:0x5b646c];
+        
+        [self addSubview:self.label];
+    }
+    
+    return self;
+}
+
+- (void) layoutSubviews {
+    [super layoutSubviews];
+    
+    // Label
+    self.label.frame = CGRectMake(10.0f, 0.0f, self.bounds.size.width - 20.0f, self.bounds.size.height);
+}
+
+#pragma mark - Public class methods
+
++ (NSString *) identifier {
+    return @"ACollectionReusableHeaderView";
+}
+
+#pragma mark - Lazy props
+
+- (UILabel *) label {
+    if (!_label) {
+        _label = [[UILabel alloc] init];
+        _label.backgroundColor = UIColor.clearColor;
+        _label.textColor = UIColor.whiteColor;
+        _label.font = [UIFont systemFontOfSize:24.0f weight:UIFontWeightBold];
+        _label.text = @"A";
+    }
+    
+    return _label;
+}
+
+@end

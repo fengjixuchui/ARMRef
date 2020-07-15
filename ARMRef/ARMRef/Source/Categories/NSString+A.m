@@ -1,5 +1,6 @@
 //
-//  ACollectionViewCell.h
+//  NSString+A.m
+//  ARMRef
 //
 //  Copyright (c) 2020 ARMRef (https://github.com/evilpenguin/ARMRef)
 //
@@ -21,18 +22,18 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+#import "NSString+A.h"
 
-#import <UIKit/UIKit.h>
+@implementation NSString (A)
 
-NS_ASSUME_NONNULL_BEGIN
+#pragma mark - Public methods
 
-@class AInstruction;
-@interface ACollectionViewCell : UICollectionViewCell
-@property (nonatomic, readonly, class) NSString *identifier;
-@property (nonatomic, weak) AInstruction *instruction;
-
-+ (CGFloat) heightForInstruction:(AInstruction *)instruction withWidth:(CGFloat)width;
+- (NSString *) firstCharacter {
+    if (self.length) {
+        return [self substringToIndex:1].lowercaseString;
+    }
+    
+    return nil;
+}
 
 @end
-
-NS_ASSUME_NONNULL_END
